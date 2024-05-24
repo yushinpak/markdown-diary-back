@@ -1,0 +1,13 @@
+{
+  "compilerOptions": {
+    "target": "es6",
+    "module": "commonjs", //어떤 모듈 방식으로 컴파일
+    "outDir": "./dist", //컴파일 후 js 파일들이 생되는 폴더
+    "rootDir": "./src", //루트 폴더
+    "strict": true, 
+    "moduleResolution": "node", //모듈 해석 방법 설정: 'node'
+    "esModuleInterop": true
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "dist"]
+}
