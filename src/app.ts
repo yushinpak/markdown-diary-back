@@ -1,22 +1,24 @@
 import dotenv from "dotenv"; // env 파일 사용
-// import cors from "cors";
+import cors from "cors";
 import express, { Request, Response } from "express";
 import mongoose from "mongoose";
 
 const fs = require("fs");
 
 const path = require("path");
-const bodyParser = require("body-parser");
+// const bodyParser = require("body-parser");
 
 import router from "./routes";
+import bodyParser from "body-parser";
 
 const app = express();
 
 dotenv.config();
 
 app.use(express.json());
+app.use(cors()); // CORS 이슈 해결
+app.use(bodyParser.json());
 
-// app.use(cors()); // CORS 이슈 해결
 
 const { MONGODB_PASSWORD, PORT } = process.env;
 mongoose.connect(
@@ -33,7 +35,7 @@ app.get("/api", (req: Request, res: Response) => {
   res.send("서버 실행 완료!");
 });
 
-let directoryPath = "/Users/using/Desktop/Sing/2. Area/Arrow"; // 일기가 담기는 곳 - 내가 현재 쓰는 것 - 임시로 채워넣음 추후
+let directoryPath = "/Users/using/Desktop/Sing/2. Area/Arrow"; // 일기가 담기는 곳 - 내가 현재 쓰는 것 - 임시로 채워넣음 추후  + 이거 /이거 슬래쉬 어디 넣을지 고민
 
 // 전체 일기 목록 가져오기
 app.get("/api/diary", async (req: Request, res: Response) => {
@@ -69,7 +71,7 @@ app.get("/api/diary", async (req: Request, res: Response) => {
 app.get("/api/:encodedTitle", async (req: Request, res: Response) => {
   const encodedTitle = req.params.encodedTitle; //추후 .md 어떻게 되는지 지켜봐야해
   const title = decodeURIComponent(encodedTitle);
-  const filePath = directoryPath + "/" + title;
+  const filePath = directoryPath + "/" + title + ".md";
 
   try {
     const stats = await fs.promises.stat(filePath);
@@ -129,6 +131,28 @@ app.delete("/api/:encodedTitle", async (req: Request, res: Response) => {
   res.status(200).send("성공적으로 파일을 삭제했습니다.");
 
 });
+
+// 일기 작성용
+app.post("/api/write", async (req: Request, res: Response) => {
+
+  const { title, content } = req.body;
+
+  // 제목과 내용 존재 여부 확인
+  if (!title || !content) {
+    return res.status(400).send("제목과 내용을 모두 입력해주세요.");
+  }
+
+  // 파일과 이름 설정
+  const fileName = `${title}.md`;
+  const filePath = directoryPath + "/" + fileName //이거 슬래쉬 그어야할지 모르겠다!
+
+  fs.writeFile(filePath, content, (err: Error) => {
+    if (err) {
+      console.error("일기 파일을 저장하는데 실패했습니다", err);
+    } 
+  })
+  res.status(200).send("성공적으로 일기 파일을 저장했습니다.");
+}) 
 
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
